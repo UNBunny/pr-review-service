@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"pr-review-service/internal/domain"
-	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -19,15 +18,13 @@ func NewUserRepo(db *pgxpool.Pool) *UserRepo {
 }
 
 func (r *UserRepo) Create(ctx context.Context, user *domain.User) error {
-
 	_, err := r.db.Exec(ctx, `
-		INSERT INTO users (user_id, username, team_name, is_active, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6)
+		INSERT INTO users (user_id, username, team_name, is_active)
+		VALUES ($1, $2, $3, $4)
 		ON CONFLICT (user_id) DO UPDATE 
 		SET username = EXCLUDED.username,
 		    team_name = EXCLUDED.team_name,
-		    is_active = EXCLUDED.is_active,
-		    updated_at = EXCLUDED.updated_at`,
+		    is_active = EXCLUDED.is_active`,
 		user.UserID, user.Username, user.TeamName, user.IsActive)
 	return err
 }
@@ -35,7 +32,7 @@ func (r *UserRepo) Create(ctx context.Context, user *domain.User) error {
 func (r *UserRepo) Update(ctx context.Context, user *domain.User) error {
 	_, err := r.db.Exec(ctx, `
 		UPDATE users 
-		SET username = $1, team_name = $2, is_active = $3,
+		SET username = $1, team_name = $2, is_active = $3
 		WHERE user_id = $4`,
 		user.Username, user.TeamName, user.IsActive, user.UserID)
 	return err
@@ -44,7 +41,7 @@ func (r *UserRepo) Update(ctx context.Context, user *domain.User) error {
 func (r *UserRepo) Get(ctx context.Context, userID string) (*domain.User, error) {
 	user := &domain.User{}
 	err := r.db.QueryRow(ctx, `
-		SELECT user_id, username, team_name, is_active, created_at, updated_at
+		SELECT user_id, username, team_name, is_active
 		FROM users WHERE user_id = $1`, userID).
 		Scan(&user.UserID, &user.Username, &user.TeamName, &user.IsActive)
 
@@ -59,7 +56,7 @@ func (r *UserRepo) Get(ctx context.Context, userID string) (*domain.User, error)
 
 func (r *UserRepo) GetByTeam(ctx context.Context, teamName string) ([]domain.User, error) {
 	rows, err := r.db.Query(ctx, `
-		SELECT user_id, username, team_name, is_active, created_at, updated_at
+		SELECT user_id, username, team_name, is_active
 		FROM users WHERE team_name = $1
 		ORDER BY username`, teamName)
 	if err != nil {
@@ -70,7 +67,7 @@ func (r *UserRepo) GetByTeam(ctx context.Context, teamName string) ([]domain.Use
 	var users []domain.User
 	for rows.Next() {
 		var user domain.User
-		if err := rows.Scan(&user.UserID, &user.Username, &user.TeamName, &user.IsActive, &user.CreatedAt, &user.UpdatedAt); err != nil {
+		if err := rows.Scan(&user.UserID, &user.Username, &user.TeamName, &user.IsActive); err != nil {
 			return nil, err
 		}
 		users = append(users, user)
@@ -80,7 +77,7 @@ func (r *UserRepo) GetByTeam(ctx context.Context, teamName string) ([]domain.Use
 
 func (r *UserRepo) GetActiveByTeam(ctx context.Context, teamName string) ([]domain.User, error) {
 	rows, err := r.db.Query(ctx, `
-		SELECT user_id, username, team_name, is_active, created_at, updated_at
+		SELECT user_id, username, team_name, is_active
 		FROM users WHERE team_name = $1 AND is_active = true
 		ORDER BY username`, teamName)
 	if err != nil {
@@ -91,7 +88,7 @@ func (r *UserRepo) GetActiveByTeam(ctx context.Context, teamName string) ([]doma
 	var users []domain.User
 	for rows.Next() {
 		var user domain.User
-		if err := rows.Scan(&user.UserID, &user.Username, &user.TeamName, &user.IsActive, &user.CreatedAt, &user.UpdatedAt); err != nil {
+		if err := rows.Scan(&user.UserID, &user.Username, &user.TeamName, &user.IsActive); err != nil {
 			return nil, err
 		}
 		users = append(users, user)
@@ -106,10 +103,9 @@ func (r *UserRepo) SetIsActive(ctx context.Context, userID string, isActive bool
 	}
 
 	user.IsActive = isActive
-	user.UpdatedAt = time.Now()
 
-	_, err = r.db.Exec(ctx, `UPDATE users SET is_active = $1, updated_at = $2 WHERE user_id = $3`,
-		isActive, user.UpdatedAt, userID)
+	_, err = r.db.Exec(ctx, `UPDATE users SET is_active = $1 WHERE user_id = $2`,
+		isActive, userID)
 	if err != nil {
 		return nil, err
 	}

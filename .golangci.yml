@@ -1,0 +1,97 @@
+run:
+  timeout: 5m
+  tests: true
+  skip-dirs:
+    - vendor
+    - .git
+
+linters:
+  enable:
+    - errcheck       # Проверка необработанных ошибок
+    - gosimple       # Упрощение кода
+    - govet          # Стандартный vet
+    - ineffassign    # Обнаружение неиспользуемых присваиваний
+    - staticcheck    # Статический анализ
+    - unused         # Поиск неиспользуемого кода
+    - gofmt          # Форматирование кода
+    - goimports      # Проверка импортов
+    - misspell       # Опечатки в комментариях
+    - revive         # Линтер для стиля кода
+    - gosec          # Проверка безопасности
+    - bodyclose      # Проверка закрытия HTTP body
+    - noctx          # Проверка использования context
+    - sqlclosecheck  # Проверка закрытия SQL
+    - rowserrcheck   # Проверка ошибок rows.Err()
+    - goconst        # Поиск повторяющихся строк
+    - dupl           # Поиск дублирующегося кода
+    - prealloc       # Предварительное выделение памяти для слайсов
+  disable:
+    - typecheck      # Отключаем, так как может конфликтовать с другими линтерами
+
+linters-settings:
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+  
+  govet:
+    check-shadowing: true
+  
+  revive:
+    confidence: 0.8
+    rules:
+      - name: blank-imports
+      - name: context-as-argument
+      - name: dot-imports
+      - name: error-return
+      - name: error-strings
+      - name: error-naming
+      - name: exported
+      - name: if-return
+      - name: increment-decrement
+      - name: var-naming
+      - name: var-declaration
+      - name: package-comments
+      - name: range
+      - name: receiver-naming
+      - name: time-naming
+      - name: indent-error-flow
+      - name: errorf
+      - name: empty-block
+      - name: superfluous-else
+      - name: unused-parameter
+      - name: unreachable-code
+      - name: redefines-builtin-id
+  
+  gosec:
+    severity: medium
+    confidence: medium
+    excludes:
+      - G104  # Не требуем проверки всех ошибок (уже покрывается errcheck)
+  
+  gofmt:
+    simplify: true
+  
+  goimports:
+    local-prefixes: pr-review-service
+  
+  misspell:
+    locale: US
+  
+  dupl:
+    threshold: 100
+  
+  goconst:
+    min-len: 3
+    min-occurrences: 3
+
+issues:
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  
+  exclude-rules:
+    # Исключаем проверку длины строк для комментариев
+    - path: _test\.go
+      linters:
+        - dupl
+        - gosec

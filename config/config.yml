@@ -1,8 +1,0 @@
-configs:
-  app_port: "8080"
-  app_log_level: "level"
-  #  [database postgres configs]
-  db_postgres_host: "localhost"
-  db_postgres_port: "5432"
-  db_postgres_user: "postgres"
-  db_postgres_name: "postgres"

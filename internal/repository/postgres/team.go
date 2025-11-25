@@ -2,10 +2,8 @@ package postgres
 
 import (
 	"context"
-	"errors"
 	"pr-review-service/internal/domain"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -31,16 +29,16 @@ func (r *TeamRepo) Get(ctx context.Context, teamName string) (*domain.Team, erro
 		Members:  []domain.TeamMember{},
 	}
 
-	err := r.db.QueryRow(ctx, `SELECT created_at FROM teams WHERE team_name = $1`, teamName).
-		Scan(&team.CreatedAt)
+	var exists bool
+	err := r.db.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM teams WHERE team_name = $1)`, teamName).
+		Scan(&exists)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, domain.ErrTeamNotFound
-		}
 		return nil, err
 	}
+	if !exists {
+		return nil, domain.ErrTeamNotFound
+	}
 
-	// Get members
 	rows, err := r.db.Query(ctx, `
 		SELECT user_id, username, is_active 
 		FROM users 

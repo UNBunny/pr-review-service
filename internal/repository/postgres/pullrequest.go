@@ -19,8 +19,10 @@ func NewPullRequestRepo(db *pgxpool.Pool) *PullRequestRepo {
 }
 
 func (r *PullRequestRepo) Create(ctx context.Context, pr *domain.PullRequest) error {
-	now := time.Now()
-	pr.CreatedAt = &now
+	if pr.CreatedAt == nil {
+		now := time.Now()
+		pr.CreatedAt = &now
+	}
 
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
