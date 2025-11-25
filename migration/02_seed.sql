@@ -27,7 +27,7 @@ ON CONFLICT (user_id) DO NOTHING;
 INSERT INTO pull_requests (pull_request_id, pull_request_name, author_id, status, created_at) VALUES
     ('pr-1001', 'Add authentication service', 'u1', 'OPEN', NOW() - INTERVAL '2 days'),
     ('pr-1002', 'Fix database migration', 'u2', 'MERGED', NOW() - INTERVAL '5 days'),
-    ('pr-1003', 'Implement user dashboard', 'u5', 'OPEN', NOW() - INTERVAL '1 day'),
+    ('pr-1003', 'Implement user dashboard', 'u6', 'OPEN', NOW() - INTERVAL '1 day'),
     ('pr-1004', 'Update deployment scripts', 'u9', 'OPEN', NOW() - INTERVAL '3 hours')
 ON CONFLICT (pull_request_id) DO NOTHING;
 
@@ -36,8 +36,8 @@ INSERT INTO pr_reviewers (pull_request_id, user_id, assigned_at) VALUES
     ('pr-1001', 'u3', NOW() - INTERVAL '2 days'),
     ('pr-1002', 'u1', NOW() - INTERVAL '5 days'),
     ('pr-1002', 'u3', NOW() - INTERVAL '5 days'),
-    ('pr-1003', 'u6', NOW() - INTERVAL '1 day'),
     ('pr-1003', 'u7', NOW() - INTERVAL '1 day'),
+    ('pr-1003', 'u8', NOW() - INTERVAL '1 day'),
     ('pr-1004', 'u10', NOW() - INTERVAL '3 hours')
 ON CONFLICT (pull_request_id, user_id) DO NOTHING;
 

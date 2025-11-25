@@ -29,7 +29,7 @@ services:
     environment:
       DATABASE_URL: postgres://postgres:postgres@db:5432/pr_review?sslmode=disable
       SERVER_PORT: 8080
-      MIGRATIONS_PATH: ./migrations
+      MIGRATIONS_PATH: ./migration
     ports:
       - "8080:8080"
     restart: unless-stopped
