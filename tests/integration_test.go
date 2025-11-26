@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -25,7 +26,7 @@ var (
 
 func getEnv(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
-		return value
+		return strings.TrimSpace(value)
 	}
 	return defaultValue
 }
@@ -63,7 +64,7 @@ func TestIntegrationFlow(t *testing.T) {
 	ctx := context.Background()
 
 	// Run migrations
-	if err := postgres.RunMigrations(ctx, pool, "../migrations"); err != nil {
+	if err := postgres.RunMigrations(ctx, pool, "../migration"); err != nil {
 		t.Fatalf("Failed to run migrations: %v", err)
 	}
 
@@ -225,7 +226,7 @@ func TestStatsEndpoint(t *testing.T) {
 	defer teardown()
 
 	ctx := context.Background()
-	if err := postgres.RunMigrations(ctx, pool, "../migrations"); err != nil {
+	if err := postgres.RunMigrations(ctx, pool, "../migration"); err != nil {
 		t.Fatalf("Failed to run migrations: %v", err)
 	}
 

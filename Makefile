@@ -13,7 +13,7 @@ build: ## Build the Go application binary
 	go build -o bin/server ./cmd/app
 
 test: ## Run integration tests
-	TEST_DATABASE_URL=postgres://postgres:postgres@localhost:5432/pr_review?sslmode=disable go test -v ./tests/...
+	powershell -Command "$$env:TEST_DATABASE_URL='postgres://postgres:postgres@127.0.0.1:5433/pr_review?sslmode=disable'; go test -v ./tests/..."
 
 lint: ## Run golangci-lint
 	golangci-lint run ./...
@@ -39,10 +39,7 @@ deps: ## Download Go dependencies
 	go mod tidy
 
 dev: ## Run in development mode (local)
-	DATABASE_URL=postgres://postgres:postgres@localhost:5432/pr_review?sslmode=disable \
-	SERVER_PORT=8080 \
-	MIGRATIONS_PATH=./migrations \
-	go run ./cmd/app/main.go
+	powershell -Command "$$env:DATABASE_URL='postgres://postgres:postgres@localhost:5433/pr_review?sslmode=disable'; $$env:SERVER_PORT='8080'; $$env:MIGRATIONS_PATH='./migrations'; go run ./cmd/app/main.go"
 
 test-all: ## Run all automated tests (PowerShell script)
 	powershell -ExecutionPolicy Bypass -File ./test-all.ps1
@@ -51,8 +48,7 @@ test-api: ## Run API tests (PowerShell script)
 	powershell -ExecutionPolicy Bypass -File ./test-api.ps1
 
 test-coverage: ## Run tests with coverage report
-	TEST_DATABASE_URL=postgres://postgres:postgres@localhost:5432/pr_review?sslmode=disable \
-	go test -v -race -coverprofile=coverage.out -covermode=atomic ./tests/...
+	powershell -Command "$$env:TEST_DATABASE_URL='postgres://postgres:postgres@localhost:5433/pr_review?sslmode=disable'; go test -v -race -coverprofile=coverage.out -covermode=atomic ./tests/..."
 	go tool cover -html=coverage.out -o coverage.html
 	@echo "Coverage report generated: coverage.html"
 
@@ -65,9 +61,8 @@ test-integration: ## Run integration tests via HTTP API
 test-integration-go: ## Run Go integration tests (requires local DB)
 	docker-compose up -d db
 	@echo "Waiting for database..."
-	@sleep 5
-	TEST_DATABASE_URL=postgres://postgres:postgres@localhost:5432/pr_review?sslmode=disable \
-	go test -v -count=1 ./tests/...
+	@timeout /t 5 /nobreak >nul
+	powershell -Command "$$env:TEST_DATABASE_URL='postgres://postgres:postgres@localhost:5433/pr_review?sslmode=disable'; go test -v -count=1 ./tests/..."
 
 verify: ## Verify project (build + lint + test)
 	@echo "🔍 Verifying project..."
